@@ -94,6 +94,12 @@ class Hc50CdkStack(Stack):
         analyze = self.model_api.root.add_resource("analyze")
         analyze.add_method("POST")
 
+        analyze.add_cors_preflight(
+            allow_origins=["*"],
+            allow_methods=["POST"],
+            allow_headers=["Content-Type", "Authorization"],
+        )
+
     def create_s3_presigned_lambda_and_apigateway(self):
         """
         Create a Lambda function for generating S3 presigned URLs and an API Gateway to expose it.
