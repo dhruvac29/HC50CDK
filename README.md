@@ -187,7 +187,7 @@ completion
 topic](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-completion.html).
 
 
-### Now we can work on out CDK Python project!
+### Now we can work on our CDK Python project!
 
 This is a blank project for CDK development with Python.
 
