@@ -1,8 +1,86 @@
-# AWS CDK Tutorial
+# AWS CDK Tutorial for Our HC50 Model
 
 ## Overview
 
-The `Hc50CdkStack` class is part of an AWS Cloud Development Kit (CDK) application. This class defines a stack that sets up AWS resources like S3 buckets, Lambda functions, and API Gateway integrations. The purpose of this stack is to handle file uploads, generate presigned URLs for S3, and perform model analysis using Lambda functions.
+The `Hc50CdkStack` class is part of an AWS Cloud Development Kit (CDK) application. This class defines a stack that sets up AWS resources like S3 buckets, Lambda functions, and API Gateway integrations. The purpose of this stack is to handle file uploads, generate pre-signed URLs for S3, and perform model analysis using Lambda functions.
+
+### Generate Pre-Signed URL
+Before setting up the CDK for S3, Lambda, and API Gateway, we need to create a pre-signed URL Lambda function. This function will handle file uploads and generate a unique URL, which will be sent to our Lambda function to run the ML model.
+
+*   This code sets up a function to generate a special URL that allows someone to upload a CSV file to a specific location in an S3 bucket.
+*   It ensures each file uploaded has a unique name.
+*   It returns this URL to the requester, allowing them to upload the file within a 5-minute window.
+
+```
+s3_client = boto3.client("s3")
+```
+
+*   This line initializes an S3 client using the `boto3` library, which will allow the code to interact with the S3 service.
+```
+bucket_name = os.environ["BUCKET_NAME"]
+```
+*   This retrieves the name of the S3 bucket (storage space in AWS) from the environment variables set in the system where this code is running.
+
+### The Main Function
+
+```
+def handler(event, context):
+    """
+    Lambda function handler to generate a presigned URL for uploading a CSV file to S3.
+
+    :param event: The event dictionary containing the request data.
+    :param context: The context in which the function is called.
+    :return: A response dictionary containing the presigned URL and unique key.
+    """
+```
+
+*   This defines a function named `handler`. In AWS Lambda (a service that runs code in response to events), this function is automatically called when the event it is configured for occurs.
+*   **event**: Contains data about the request.
+*   **context**: Provides information about the function's execution environment.
+
+### Generating a Unique Key
+
+```
+unique_key = f"{uuid.uuid4()}.csv"
+```
+
+*   This line generates a unique identifier using `uuid.uuid4()` and appends `.csv` to it. This ensures that each file uploaded has a unique name.
+
+### Generating a Pre-signed URL
+
+```
+presigned_url = s3_client.generate_presigned_url(
+        "put_object",
+        Params={"Bucket": bucket_name, "Key": unique_key, "ContentType": "text/csv"},
+        ExpiresIn=300,  # URL expiration time in seconds (5 minutes)
+        HttpMethod="PUT",
+    )
+```
+*   This line generates a pre-signed URL, which is a special URL that allows someone to upload a file directly to S3 without needing to have AWS credentials.
+*   **"put_object"**: This specifies the type of operation (uploading a file).
+*   **Params**: These are the parameters for the operation.
+*   **"Bucket"**: The name of the S3 bucket where the file will be uploaded.
+*   **"Key"**: The unique key (filename) for the file.
+*   **"ContentType"**: Specifies the type of file (CSV in this case).
+*   **ExpiresIn=300**: The URL will expire in 300 seconds (5 minutes).
+*   **HttpMethod="PUT"**: Specifies that the HTTP method for this URL is PUT, which means it's used for uploading a file.
+
+### Returning the Response
+
+```
+return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"url": presigned_url, "key": unique_key}),
+    }
+```
+
+*   This returns a response back to the requester.
+*   **statusCode: 200**: Indicates that the request was successful.
+*   **headers**: Specifies that the response content is JSON.
+*   **body**: Contains the pre-signed URL and the unique key in JSON format.
+
+# HC50 CDK Main Function
 
 ### Initialization
 ```
