@@ -11,19 +11,19 @@ Before setting up the CDK for S3, Lambda, and API Gateway, we need to create a p
 *   It ensures each file uploaded has a unique name.
 *   It returns this URL to the requester, allowing them to upload the file within a 5-minute window.
 
-```
+```py
 s3_client = boto3.client("s3")
 ```
 
 *   This line initializes an S3 client using the `boto3` library, which will allow the code to interact with the S3 service.
-```
+```py3
 bucket_name = os.environ["BUCKET_NAME"]
 ```
 *   This retrieves the name of the S3 bucket (storage space in AWS) from the environment variables set in the system where this code is running.
 
 ### The Main Function
 
-```
+```py3
 def handler(event, context):
     """
     Lambda function handler to generate a presigned URL for uploading a CSV file to S3.
@@ -40,7 +40,7 @@ def handler(event, context):
 
 ### Generating a Unique Key
 
-```
+```py3
 unique_key = f"{uuid.uuid4()}.csv"
 ```
 
@@ -48,7 +48,7 @@ unique_key = f"{uuid.uuid4()}.csv"
 
 ### Generating a Pre-signed URL
 
-```
+```py3
 presigned_url = s3_client.generate_presigned_url(
         "put_object",
         Params={"Bucket": bucket_name, "Key": unique_key, "ContentType": "text/csv"},
@@ -67,7 +67,7 @@ presigned_url = s3_client.generate_presigned_url(
 
 ### Returning the Response
 
-```
+```py3
 return {
         "statusCode": 200,
         "headers": {"Content-Type": "application/json"},
@@ -83,7 +83,7 @@ return {
 # HC50 CDK Main Function
 
 ### Initialization
-```
+```py3
 class Hc50CdkStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -105,7 +105,7 @@ class Hc50CdkStack(Stack):
 
 ### S3 Bucket Creation
 
-```
+```py3
 def create_hc50_s3_bucket(self):
     self.hc50_bucket = _s3.Bucket(
         self,
@@ -148,7 +148,7 @@ def create_hc50_s3_bucket(self):
 
 ### Lambda Function and API Gateway for Model Analysis
 
-```
+```py3
 def create_model_lambda_and_apigateway(self):
     self.prediction_lambda = _lambda.DockerImageFunction(
         scope=self,
@@ -221,7 +221,7 @@ def create_model_lambda_and_apigateway(self):
 
 ### Lambda Function and API Gateway for Presigned URLs
 
-```
+```py3
 def create_s3_presigned_lambda_and_apigateway(self):
     self.presigned_lambda = _lambda.Function(
         self,
